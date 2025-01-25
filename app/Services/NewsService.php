@@ -28,7 +28,8 @@ class NewsService extends Service {
         DB::beginTransaction();
 
         try {
-            $data['parsed_text'] = parse($data['text']);
+            $pings = [];
+            $data['parsed_text'] = parse($data['text'], $pings);
             $data['user_id'] = $user->id;
             if (!isset($data['is_visible'])) {
                 $data['is_visible'] = 0;
@@ -38,6 +39,10 @@ class NewsService extends Service {
 
             if ($news->is_visible) {
                 $this->alertUsers();
+            }
+
+            if ($pings) {
+                sendNotifications($pings, $user, $news);
             }
 
             return $this->commitReturn($news);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Character\CharacterCategory;
 use App\Models\Currency\Currency;
 use App\Models\Currency\CurrencyCategory;
+use App\Models\Emote;
 use App\Models\Feature\Feature;
 use App\Models\Feature\FeatureCategory;
 use App\Models\Item\Item;
@@ -535,6 +536,23 @@ class WorldController extends Controller {
 
         return view('world.character_categories', [
             'categories' => $query->visible(Auth::user() ?? null)->orderBy('sort', 'DESC')->orderBy('id')->paginate(20)->appends($request->query()),
+        ]);
+    }
+
+    /**
+     * Shows the emotes page.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getEmotes(Request $request) {
+        $query = Emote::active();
+        $data = $request->only(['name']);
+        if (isset($data['name'])) {
+            $query->where('name', 'LIKE', '%'.$data['name'].'%');
+        }
+
+        return view('world.emotes', [
+            'emotes' => $query->orderBy('name', 'DESC')->paginate(20)->appends($request->query()),
         ]);
     }
 }

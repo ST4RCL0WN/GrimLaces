@@ -773,3 +773,14 @@ tr.accountbound {
 .content-warning:hover {
     filter: none;
 }
+
+/* MENTIONS *************************************************************************************/
+.data-mention {
+    padding: 0.1em 0.25em;
+    border-radius: 0.15em;
+    background-color: #e6e8fd;
+}
+
+.data-mention a {
+    color: #5d66c9;
+}

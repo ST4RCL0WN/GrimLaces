@@ -347,6 +347,13 @@ return [
         'url'     => '',
     ],
 
+    // MENTIONED
+    299 => [
+        'name'    => 'Mentioned',
+        'message' => '<a href="{sender_url}">{sender_name}</a> has mentioned {mention_target} {mention_type}. <a href="{mention_url}">See Context.</a>',
+        'url'     => '',
+    ],
+
     // CHARACTER_ITEM_GRANT
     501 => [
         'name'    => 'Character Item Grant',

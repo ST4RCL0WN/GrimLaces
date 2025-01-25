@@ -31,7 +31,8 @@ class SalesService extends Service {
         DB::beginTransaction();
 
         try {
-            $data['parsed_text'] = parse($data['text']);
+            $pings = [];
+            $data['parsed_text'] = parse($data['text'], $pings);
             $data['user_id'] = $user->id;
             if (!isset($data['is_visible'])) {
                 $data['is_visible'] = 0;
@@ -60,6 +61,10 @@ class SalesService extends Service {
 
             if ($sales->is_visible) {
                 $this->alertUsers();
+            }
+
+            if ($pings) {
+                sendNotifications($pings, $user, $sales);
             }
 
             return $this->commitReturn($sales);

@@ -208,6 +208,20 @@ class Item extends Model {
     }
 
     /**
+     * Displays the item's name, but with specific classes to identify mentions.
+     */
+    public function getMentionDisplayNameAttribute() {
+        return '<span class="data-mention" data-mention-type="item" data-id="'.$this->id.'"><a href="'.$this->idUrl.'" class="display-item">'.$this->name.'</a></span>';
+    }
+
+    /**
+     * Displays the item's image, but with specific classes to identify mentions.
+     */
+    public function getMentionDisplayImageAttribute() {
+        return '<span data-mention-type="item" data-id="'.$this->id.'"><img src="'.$this->imageUrl.'" alt="'.$this->name.'"></span>';
+    }
+
+    /**
      * Gets the file directory containing the model's image.
      *
      * @return string

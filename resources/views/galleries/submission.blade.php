@@ -219,19 +219,8 @@
                 <div class="card-body">
                     In the rich text editor:
                     <div class="alert alert-secondary">
-                        [thumb={{ $submission->id }}]
+                        {{ '#' . $submission->id }}
                     </div>
-                    @if (!config('lorekeeper.settings.wysiwyg_comments'))
-                        In a comment:
-                        <div class="alert alert-secondary">
-                            @if (isset($submission->hash) && !isset($submission->content_warning))
-                                [![Image]({{ $submission->thumbnailUrl }})]({{ $submission->url }})
-                            @else
-                                [{{ $submission->displayTitle }} by {{ $submission->creditsPlain }}
-                                {{ isset($submission->hash) ? '(Art)' : '(Literature)' }}{{ isset($submission->content_warning) ? ' ・ **Content Warning:** ' . nl2br(htmlentities($submission->content_warning)) : '' }}]({{ $submission->url }})
-                            @endif
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>

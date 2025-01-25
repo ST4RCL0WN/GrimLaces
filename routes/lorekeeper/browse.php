@@ -42,9 +42,10 @@ Route::group(['prefix' => 'sales'], function () {
 /**************************************************************************************************
     Users
 **************************************************************************************************/
-Route::get('/users', 'BrowseController@getUsers');
-Route::get('/blacklist', 'BrowseController@getBlacklist');
-Route::get('/deactivated-list', 'BrowseController@getDeactivated');
+Route::get('users', 'BrowseController@getUsers');
+Route::get('mentions', 'BrowseController@getSearchMentions');
+Route::get('blacklist', 'BrowseController@getBlacklist');
+Route::get('deactivated-list', 'BrowseController@getDeactivated');
 
 // PROFILES
 Route::group(['prefix' => 'user', 'namespace' => 'Users'], function () {
@@ -118,6 +119,7 @@ Route::group(['prefix' => 'world'], function () {
     Route::get('traits', 'WorldController@getFeatures');
     Route::get('traits/modal/{id}', 'WorldController@getFeatureDetail')->where(['id' => '[0-9]+']);
     Route::get('character-categories', 'WorldController@getCharacterCategories');
+    Route::get('emotes', 'WorldController@getEmotes');
 });
 
 Route::group(['prefix' => 'prompts'], function () {

@@ -19,4 +19,8 @@
         <div class="sidebar-item"><a href="{{ url('world/currency-categories') }}" class="{{ set_active('world/currency-categories*') }}">Currency Categories</a></div>
         <div class="sidebar-item"><a href="{{ url('world/currencies') }}" class="{{ set_active('world/currencies*') }}">All Currencies</a></div>
     </li>
+    <li class="sidebar-section">
+        <div class="sidebar-section-header">Miscellaneous</div>
+        <div class="sidebar-item"><a href="{{ url('world/emotes') }}" class="{{ set_active('world/emotes*') }}">Emotes</a></div>
+    </li>
 </ul>

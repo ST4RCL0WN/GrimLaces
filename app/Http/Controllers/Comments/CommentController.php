@@ -82,7 +82,8 @@ class CommentController extends Controller {
 
         $comment->commentable()->associate($base);
 
-        $comment->comment = config('lorekeeper.settings.wysiwyg_comments') ? parse($request->message) : $request->message;
+        $pings = [];
+        $comment->comment = parse($request->message, $pings);
         $comment->approved = !config('comments.approval_required');
 
         $comment->type = isset($request['type']) && $request['type'] ? $request['type'] : 'User-User';
@@ -154,6 +155,10 @@ class CommentController extends Controller {
             ]);
         }
 
+        if ($pings) {
+            sendNotifications($pings, Auth::user(), $comment);
+        }
+
         return Redirect::to(URL::previous().'#comment-'.$comment->getKey());
     }
 
@@ -173,13 +178,13 @@ class CommentController extends Controller {
             'comment_id' => $comment->id,
             'data'       => [
                 'action'      => 'edit',
-                'old_comment' => config('lorekeeper.settings.wysiwyg_comments') ? parse($comment->comment) : $comment->comment,
-                'new_comment' => config('lorekeeper.settings.wysiwyg_comments') ? parse($request->message) : $request->message,
+                'old_comment' => parse($comment->comment),
+                'new_comment' => parse($request->message),
             ],
         ]);
 
         $comment->update([
-            'comment' => config('lorekeeper.settings.wysiwyg_comments') ? parse($request->message) : $request->message,
+            'comment' => parse($request->message),
         ]);
 
         return Redirect::to(URL::previous().'#comment-'.$comment->getKey());
@@ -215,7 +220,7 @@ class CommentController extends Controller {
         $reply->commenter()->associate(Auth::user());
         $reply->commentable()->associate($comment->commentable);
         $reply->parent()->associate($comment);
-        $reply->comment = config('lorekeeper.settings.wysiwyg_comments') ? parse($request->message) : $request->message;
+        $reply->comment = parse($request->message);
         $reply->type = $comment->type;
         $reply->approved = !config('comments.approval_required');
         $reply->save();

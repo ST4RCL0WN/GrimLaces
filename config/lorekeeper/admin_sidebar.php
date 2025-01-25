@@ -65,6 +65,10 @@ return [
                 'name' => 'Pages',
                 'url'  => 'admin/pages',
             ],
+            [
+                'name' => 'Emotes',
+                'url'  => 'admin/emotes',
+            ],
         ],
     ],
     'Users'      => [

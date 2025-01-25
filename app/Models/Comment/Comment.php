@@ -151,30 +151,25 @@ class Comment extends Model {
      * @return string
      */
     public function getCommentAttribute() {
-        if (config('lorekeeper.settings.wysiwyg_comments')) {
-            return preg_replace_callback(
-                '/(?<!href=")(?<!src=")(?<!\()(https?:\/\/[^\s<]+)/',
-                function ($matches) {
-                    $url = $matches[1];
-                    $parsedUrl = parse_url($url);
-                    $domain = $parsedUrl['host'];
-
-                    return '<a href="'.$url.'" target="_blank">'.$domain.'</a>';
-                },
-                $this->attributes['comment']
-            );
-        }
-
         return preg_replace_callback(
-            '/(?<!\()(https?:\/\/[^\s]+)/',
+            '/(?<!href=")(?<!src=")(?<!\()(https?:\/\/[^\s<]+)/',
             function ($matches) {
                 $url = $matches[1];
                 $parsedUrl = parse_url($url);
                 $domain = $parsedUrl['host'];
 
-                return '['.$domain.']('.$url.')';
+                return '<a href="'.$url.'" target="_blank">'.$domain.'</a>';
             },
             $this->attributes['comment']
         );
+    }
+
+    /**
+     * Returns the mention type text for ping notifications.
+     *
+     * @return string
+     */
+    public function getMentionTypeAttribute() {
+        return 'in a comment';
     }
 }

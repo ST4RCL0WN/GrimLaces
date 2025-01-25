@@ -160,6 +160,15 @@ class News extends Model implements Feedable {
         return 'manage_news';
     }
 
+    /**
+     * Returns the mention type text for ping notifications.
+     *
+     * @return string
+     */
+    public function getMentionTypeAttribute() {
+        return 'in a news post';
+    }
+
     /**********************************************************************************************
 
         OTHER FUNCTIONS

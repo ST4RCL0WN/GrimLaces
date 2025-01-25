@@ -121,6 +121,14 @@ function getAssetModelString($type, $namespaced = true) {
             }
             break;
 
+        case 'users': case 'user': // users aren't really assets, but it's convenient to be able to get the user model
+            if ($namespaced) {
+                return '\App\Models\User\User';
+            } else {
+                return 'User';
+            }
+            break;
+
         case 'user_items':
             if ($namespaced) {
                 return '\App\Models\User\UserItem';
@@ -129,7 +137,7 @@ function getAssetModelString($type, $namespaced = true) {
             }
             break;
 
-        case 'characters':
+        case 'characters': case 'character':
             if ($namespaced) {
                 return '\App\Models\Character\Character';
             } else {
@@ -142,6 +150,22 @@ function getAssetModelString($type, $namespaced = true) {
                 return '\App\Models\Character\CharacterItem';
             } else {
                 return 'CharacterItem';
+            }
+            break;
+
+        case 'emotes': case 'emote':
+            if ($namespaced) {
+                return '\App\Models\Emote';
+            } else {
+                return 'Emote';
+            }
+            break;
+
+        case 'gallery_submissions': case 'gallery_submission':
+            if ($namespaced) {
+                return '\App\Models\Gallery\GallerySubmission';
+            } else {
+                return 'GallerySubmission';
             }
             break;
     }

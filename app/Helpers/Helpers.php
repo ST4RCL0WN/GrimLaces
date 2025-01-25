@@ -99,240 +99,6 @@ function format_masterlist_number($number, $digits) {
 }
 
 /**
- * Parses a piece of user-entered text for HTML output and optionally gets pings.
- *
- * @param string $text
- * @param array  $pings
- *
- * @return string
- */
-function parse($text, &$pings = null) {
-    if (!$text) {
-        return null;
-    }
-
-    require_once base_path().'/vendor/ezyang/htmlpurifier/library/HTMLPurifier.auto.php';
-
-    $config = HTMLPurifier_Config::createDefault();
-    $config->set('Attr.EnableID', true);
-    $config->set('HTML.DefinitionID', 'include');
-    $config->set('HTML.DefinitionRev', 2);
-    if ($def = $config->maybeGetRawHTMLDefinition()) {
-        $def->addElement('include', 'Block', 'Empty', 'Common', ['file*' => 'URI', 'height' => 'Text', 'width' => 'Text']);
-        $def->addAttribute('a', 'data-toggle', 'Enum#collapse,tab');
-        $def->addAttribute('a', 'aria-expanded', 'Enum#true,false');
-        $def->addAttribute('a', 'data-target', 'Text');
-        $def->addAttribute('div', 'data-parent', 'Text');
-    }
-
-    $purifier = new HTMLPurifier($config);
-    $text = $purifier->purify($text);
-
-    $users = $characters = null;
-    $text = parseUsers($text, $users);
-    $text = parseUsersAndAvatars($text, $users);
-    $text = parseUserIDs($text, $users);
-    $text = parseUserIDsForAvatars($text, $users);
-    $text = parseCharacters($text, $characters);
-    $text = parseCharacterThumbs($text, $characters);
-    $text = parseGalleryThumbs($text, $submissions);
-    if ($pings) {
-        $pings = ['users' => $users, 'characters' => $characters];
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match user mentions
- * and replace with a link.
- *
- * @param string $text
- * @param mixed  $users
- *
- * @return string
- */
-function parseUsers($text, &$users) {
-    $matches = null;
-    $users = [];
-    $count = preg_match_all('/\B@([A-Za-z0-9_-]+)/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $user = App\Models\User\User::where('name', $match)->first();
-            if ($user) {
-                $users[] = $user;
-                $text = preg_replace('/\B@'.$match.'/', $user->displayName, $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match user mentions
- * and replace with a link and avatar.
- *
- * @param string $text
- * @param mixed  $users
- *
- * @return string
- */
-function parseUsersAndAvatars($text, &$users) {
-    $matches = null;
-    $users = [];
-    $count = preg_match_all('/\B%([A-Za-z0-9_-]+)/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $user = App\Models\User\User::where('name', $match)->first();
-            if ($user) {
-                $users[] = $user;
-                $text = preg_replace('/\B%'.$match.'/', '<a href="'.$user->url.'"><img src="'.$user->avatarUrl.'" style="width:70px; height:70px; border-radius:50%; " alt="'.$user->name.'\'s Avatar"></a>'.$user->displayName, $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match userid mentions
- * and replace with a link.
- *
- * @param string $text
- * @param mixed  $users
- *
- * @return string
- */
-function parseUserIDs($text, &$users) {
-    $matches = null;
-    $users = [];
-    $count = preg_match_all('/\[user=([^\[\]&<>?"\']+)\]/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $user = App\Models\User\User::where('id', $match)->first();
-            if ($user) {
-                $users[] = $user;
-                $text = preg_replace('/\[user='.$match.'\]/', $user->displayName, $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match userid mentions
- * and replace with a user avatar.
- *
- * @param string $text
- * @param mixed  $users
- *
- * @return string
- */
-function parseUserIDsForAvatars($text, &$users) {
-    $matches = null;
-    $users = [];
-    $count = preg_match_all('/\[userav=([^\[\]&<>?"\']+)\]/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $user = App\Models\User\User::where('id', $match)->first();
-            if ($user) {
-                $users[] = $user;
-                $text = preg_replace('/\[userav='.$match.'\]/', '<a href="'.$user->url.'"><img src="'.$user->avatarUrl.'" style="width:70px; height:70px; border-radius:50%; " alt="'.$user->name.'\'s Avatar"></a>', $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match character mentions
- * and replace with a link.
- *
- * @param string $text
- * @param mixed  $characters
- *
- * @return string
- */
-function parseCharacters($text, &$characters) {
-    $matches = null;
-    $characters = [];
-    $count = preg_match_all('/\[character=([^\[\]&<>?"\']+)\]/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $character = App\Models\Character\Character::where('slug', $match)->first();
-            if ($character) {
-                $characters[] = $character;
-                $text = preg_replace('/\[character='.$match.'\]/', $character->displayName, $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match character mentions
- * and replace with a thumbnail.
- *
- * @param string $text
- * @param mixed  $characters
- *
- * @return string
- */
-function parseCharacterThumbs($text, &$characters) {
-    $matches = null;
-    $characters = [];
-    $count = preg_match_all('/\[charthumb=([^\[\]&<>?"\']+)\]/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $character = App\Models\Character\Character::where('slug', $match)->first();
-            if ($character) {
-                $characters[] = $character;
-                $text = preg_replace('/\[charthumb='.$match.'\]/', '<a href="'.$character->url.'"><img class="img-thumbnail" alt="Thumbnail of '.$character->fullName.'" data-toggle="tooltip" title="'.$character->fullName.'" src="'.$character->image->thumbnailUrl.'"></a>', $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
- * Parses a piece of user-entered text to match gallery submission thumb mentions
- * and replace with a link.
- *
- * @param string $text
- * @param mixed  $submissions
- *
- * @return string
- */
-function parseGalleryThumbs($text, &$submissions) {
-    $matches = null;
-    $submissions = [];
-    $count = preg_match_all('/\[thumb=([^\[\]&<>?"\']+)\]/', $text, $matches);
-    if ($count) {
-        $matches = array_unique($matches[1]);
-        foreach ($matches as $match) {
-            $submission = App\Models\Gallery\GallerySubmission::where('id', $match)->first();
-            if ($submission) {
-                $submissions[] = $submission;
-                $text = preg_replace('/\[thumb='.$match.'\]/', '<a href="'.$submission->url.'" data-toggle="tooltip" title="'.$submission->displayTitle.' by '.nl2br(htmlentities($submission->creditsPlain)).(isset($submission->content_warning) ? '<br/><strong>Content Warning:</strong> '.nl2br(htmlentities($submission->content_warning)) : '').'">'.view('widgets._gallery_thumb', ['submission' => $submission]).'</a>', $text);
-            }
-        }
-    }
-
-    return $text;
-}
-
-/**
  * Generates a string of random characters of the specified length.
  *
  * @param int $characters
@@ -482,4 +248,125 @@ function faVersion() {
     }
 
     return asset($directory.'/'.$version.'.min.css');
+}
+
+/****************************************************************************************
+ *
+ * PARSING FUNCTIONS
+ *
+ ****************************************************************************************/
+
+/**
+ * Parses a piece of user-entered text for HTML output and optionally gets pings.
+ *
+ * @param string $text
+ * @param array  $pings
+ *
+ * @return string
+ */
+function parse($text, &$pings = null) {
+    if (!$text) {
+        return null;
+    }
+
+    require_once base_path().'/vendor/ezyang/htmlpurifier/library/HTMLPurifier.auto.php';
+
+    $config = HTMLPurifier_Config::createDefault();
+    $config->set('Attr.EnableID', true);
+    $config->set('HTML.DefinitionID', 'include');
+    $config->set('HTML.DefinitionRev', 2);
+    if ($def = $config->maybeGetRawHTMLDefinition()) {
+        $def->addElement('include', 'Block', 'Empty', 'Common', ['file*' => 'URI', 'height' => 'Text', 'width' => 'Text']);
+        $def->addAttribute('a', 'data-toggle', 'Enum#collapse,tab');
+        $def->addAttribute('a', 'aria-expanded', 'Enum#true,false');
+        $def->addAttribute('a', 'data-target', 'Text');
+        $def->addAttribute('div', 'data-parent', 'Text');
+
+        // mentions
+        $elements = ['a', 'div', 'span', 'p', 'img'];
+        foreach ($elements as $element) {
+            $def->addAttribute($element, 'data-mention-type', 'Text');
+            $def->addAttribute($element, 'data-id', 'Number');
+        }
+    }
+
+    $purifier = new HTMLPurifier($config);
+    $text = $purifier->purify($text);
+
+    $text = parseMentions($text, $pings);
+
+    return $text;
+}
+
+/**
+ * Parses a piece of user-entered text to match mentions,
+ * We don't replace the text and instead modify it on display to allow for name, image, hash, etc. changes, without breaking links or mentions.
+ *
+ * @param string $text
+ * @param array  $pings
+ *
+ * @return string
+ */
+function parseMentions($text, &$pings) {
+    $matches = [];
+    $count = preg_match_all(
+        '/<([^ >]+)[^>]*data-mention-type="([^"]+)"[^>]*data-id="([^"]+)"[^>]*>(.*?)<\/\1>/s',
+        $text,
+        $matches,
+        PREG_SET_ORDER
+    );
+
+    if ($count) {
+        foreach ($matches as $match) {
+            $parentElement = $match[0];
+            $type = $match[2];
+            $id = $match[3];
+
+            $model = getAssetModelString($type);
+            $object = $model::find($id);
+
+            if (!$object) {
+                continue;
+            }
+
+            $pings[$type][] = $object;
+            $hasImage = preg_match('/<img[^>]+>/i', $parentElement);
+            $text = str_replace($parentElement, $hasImage ? $object->mentionImage : $object->mentionDisplayName, $text);
+        }
+    }
+
+    return $text;
+}
+
+/**
+ * Sends a notification to users or character's owners.
+ *
+ * @param mixed $pings
+ * @param mixed $user
+ * @param mixed $mention
+ */
+function sendNotifications($pings, $user, $mention) {
+    if ($pings) {
+        foreach ($pings as $type => $objects) {
+            foreach ($objects as $object) {
+                if ($type == 'user' && $object->id != $user->id) {
+                    App\Facades\Notifications::create('MENTIONED', $object, [
+                        'sender_url'     => $user->url,
+                        'sender_name'    => $user->name,
+                        'mention_target' => 'you',
+                        'mention_url'    => $mention->url,
+                        'mention_type'   => $mention->mentionType,
+                    ]);
+                } elseif ($type == 'character' && $object->user->id != $user->id) {
+                    App\Facades\Notifications::create('MENTIONED', $object->user, [
+                        'sender_url'     => $user->url,
+                        'sender_name'    => $user->name,
+                        'mention_target' => 'your character '.$object->displayName,
+                        'mention_url'    => $mention->url,
+                        'mention_type'   => $mention->mentionType,
+                    ]);
+                }
+            }
+        }
+    }
 }

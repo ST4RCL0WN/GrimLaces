@@ -9,8 +9,5 @@
 </div>
 {!! Form::close() !!}
 
-<script>
-    $(document).ready(function() {
-        @include('js._modal_wysiwyg')
-    });
-</script>
+
+@include('js._modal_wysiwyg')

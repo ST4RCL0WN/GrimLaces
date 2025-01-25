@@ -216,6 +216,15 @@ class Sales extends Model implements Feedable {
         return 'manage_sales';
     }
 
+    /**
+     * Returns the mention type text for ping notifications.
+     *
+     * @return string
+     */
+    public function getMentionTypeAttribute() {
+        return 'in a sales post';
+    }
+
     /**********************************************************************************************
 
         OTHER FUNCTIONS

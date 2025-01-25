@@ -7,7 +7,11 @@ use App\Models\Character\Character;
 use App\Models\Character\CharacterCategory;
 use App\Models\Character\CharacterImage;
 use App\Models\Character\Sublist;
+use App\Models\Emote;
 use App\Models\Feature\Feature;
+use App\Models\Gallery\GallerySubmission;
+use App\Models\Item\Item;
+use App\Models\Prompt\Prompt;
 use App\Models\Rank\Rank;
 use App\Models\Rarity;
 use App\Models\Species\Species;
@@ -265,6 +269,130 @@ class BrowseController extends Controller {
             'userOptions'     => User::query()->orderBy('name')->pluck('name', 'id')->toArray(),
             'contentWarnings' => $contentWarnings,
         ]);
+    }
+
+    /**************************************************************************************************
+     *
+     * MENTIONS
+     *
+     **************************************************************************************************/
+
+    /**
+     * Shows the list (users, emotes, etc) matching the search query.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function getSearchMentions(Request $request) {
+        $delimiter = $request->get('delimiter');
+        $queryString = $request->get('query');
+        $result = collect();
+        switch ($delimiter) {
+            case '@':
+                $users = User::visible()->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($user) {
+                    return [
+                        'type'                 => '@',
+                        'name'                 => $user->name,
+                        'image'                => $user->avatarUrl,
+                        'mention_display_name' => $user->mentionDisplayName,
+                    ];
+                });
+
+                $characters = Character::visible()->where(function ($query) use ($queryString) {
+                    $query->where('name', 'LIKE', "%{$queryString}%")->orWhere('slug', 'LIKE', "%{$queryString}%");
+                })->orderBy('name')->get()->map(function ($character) {
+                    return [
+                        'type'                 => '@',
+                        'name'                 => $character->fullName,
+                        'image'                => $character->image->thumbnailUrl,
+                        'mention_display_name' => $character->mentionDisplayName,
+                    ];
+                });
+
+                $result = collect($users)->merge(collect($characters));
+                break;
+            case ':':
+                $emotes = Emote::where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($emote) {
+                    return [
+                        'type'                 => ':',
+                        'name'                 => $emote->name.' (Emote)',
+                        'image'                => $emote->imageUrl,
+                        'mention_display_name' => $emote->mentionImage,
+                    ];
+                });
+
+                $items = Item::released()->where('has_image', 1)->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($item) {
+                    return [
+                        'type'                 => ':',
+                        'name'                 => $item->name.' (Item)',
+                        'image'                => $item->imageUrl,
+                        'mention_display_name' => $item->mentionImage,
+                    ];
+                });
+
+                $result = collect($emotes)->merge(collect($items));
+                break;
+            case '#':
+                $users = User::visible()->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($user) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $user->name.' (User)',
+                        'image'                => $user->avatarUrl,
+                        'mention_display_name' => $user->mentionImage,
+                    ];
+                });
+
+                $characters = Character::visible()->where(function ($query) use ($queryString) {
+                    $query->where('name', 'LIKE', "%{$queryString}%")->orWhere('slug', 'LIKE', "%{$queryString}%");
+                })->orderBy('name')->get()->map(function ($character) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $character->fullName.' (Character)',
+                        'image'                => $character->image->thumbnailUrl,
+                        'mention_display_name' => $character->mentionImage,
+                    ];
+                });
+
+                $items = Item::released()->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($item) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $item->name.' (Item)',
+                        'image'                => $item->has_image ? $item->imageUrl : null,
+                        'mention_display_name' => $item->has_image ? $item->mentionImage : $item->mentionDisplayName,
+                    ];
+                });
+
+                $prompts = Prompt::active()->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($prompt) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $prompt->name.' (Prompt)',
+                        'image'                => $prompt->has_image ? $prompt->imageUrl : null,
+                        'mention_display_name' => $prompt->has_image ? $prompt->mentionImage : $prompt->mentionDisplayName,
+                    ];
+                });
+
+                $traits = Feature::visible()->where('name', 'LIKE', "%{$queryString}%")->orderBy('name')->get()->map(function ($trait) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $trait->name.' (Trait)',
+                        'image'                => $trait->has_image ? $trait->mentionImage : $trait->mentionDisplayName,
+                        'mention_display_name' => $trait->mentionDisplayName,
+                    ];
+                });
+
+                $gallerySubmissions = GallerySubmission::visible()->where('title', 'LIKE', "%{$queryString}%")->orderBy('title')->get()->map(function ($submission) {
+                    return [
+                        'type'                 => '#',
+                        'name'                 => $submission->title.' (Gallery Submission)',
+                        'image'                => $submission->has_image ? $submission->imageUrl : null,
+                        'mention_display_name' => $submission->has_image ? $submission->mentionImage : $submission->mentionDisplayName,
+                    ];
+                });
+
+                $result = collect($users)->merge(collect($characters))->merge(collect($items))->merge(collect($prompts))->merge(collect($traits))->merge(collect($gallerySubmissions));
+                break;
+        }
+
+        return response()->json($result);
     }
 
     /**

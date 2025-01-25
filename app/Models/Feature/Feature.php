@@ -215,6 +215,22 @@ class Feature extends Model {
     }
 
     /**
+     * Displays the feature's name, but with specific classes to identify mentions.
+     */
+    public function getMentionDisplayNameAttribute() {
+        return '<span class="data-mention" data-mention-type="feature" data-id="'.$this->id.'"><a href="'.$this->url.'" class="display-trait">'.$this->name.'</a></span>'.($this->rarity ? ' ('.$this->rarity->displayName.')' : '');
+    }
+
+    /**
+     * Displays the feature's image, but with specific classes to identify mentions.
+     *
+     * @return string
+     */
+    public function getMentionImageAttribute() {
+        return '<span data-mention-type="feature" data-id="'.$this->id.'"><img class="img-fluid rounded" src="'.$this->imageUrl.'" alt="'.$this->name.'"></span>';
+    }
+
+    /**
      * Gets the file directory containing the model's image.
      *
      * @return string

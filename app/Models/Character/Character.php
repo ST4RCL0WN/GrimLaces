@@ -316,6 +316,24 @@ class Character extends Model {
     }
 
     /**
+     * Displays the character's name, but with specific classes to identify mentions.
+     *
+     * @return string
+     */
+    public function getMentionDisplayNameAttribute() {
+        return '<span class="data-mention" data-mention-type="character" data-id="'.$this->id.'"><a href="'.$this->url.'" class="display-character">@'.$this->fullName.'</a></span>';
+    }
+
+    /**
+     * Displays the character's thumbnail image, but with specific classes to identify mentions.
+     *
+     * @return string
+     */
+    public function getMentionImageAttribute() {
+        return '<span data-mention-type="character" data-id="'.$this->id.'"><img class="img-fluid rounded" src="'.$this->image->thumbnailUrl.'" alt="'.$this->name.'" class="mention-thumbnail"></span>';
+    }
+
+    /**
      * Gets the character's name, including their code and user-assigned name.
      * If this is a MYO slot, simply returns the slot's name.
      *

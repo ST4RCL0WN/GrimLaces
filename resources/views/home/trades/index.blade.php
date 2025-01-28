@@ -11,7 +11,11 @@
         Trades
     </h1>
 
+    <p>Here are your trades.</p>
+
     <div class="text-right">
+        <a href="{{ url('trades/listings') }}" class="btn btn-dark">View Trade Listings</a>
+        <a href="{{ url('trades/listings/create') }}" class="btn btn-secondary">New Trade Listing</a>
         <a href="{{ url('trades/create') }}" class="btn btn-primary">New Trade</a>
     </div>
 

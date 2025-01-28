@@ -1,12 +1,15 @@
-<h2>
-    {!! $user->displayName !!}'s Offer
-    <span class="float-right">
+<div class="d-flex h2">
+    <div>{!! $user->displayName !!}'s Offer</div>
+    <div class="ml-auto">
         @if (Auth::user()->id == $user->id && $trade->status == 'Open')
             @if ($trade->{'is_' . $type . '_confirmed'})
                 <a href="#" class="btn btn-sm btn-outline-danger" id="confirmOfferButton" data-toggle="tooltip"
                     title="This will unconfirm your offer and allow you to edit it. You will need to reconfirm your offer after you have edited it to proceed.">Unconfirm</a>
             @else
-                <a href="{{ url('trades/' . $trade->id . '/edit') }}" class="btn btn-sm btn-primary">Edit</a> <a href="#" class="btn btn-sm btn-outline-primary" id="confirmOfferButton">Confirm</a>
+                <a href="{{ url('trades/' . $trade->id . '/edit') }}" class="btn btn-sm btn-primary">
+                    Edit {!! add_help('This will only edit your offer. You will need to confirm your offer again after editing.') !!}
+                </a>
+                <a href="#" class="btn btn-sm btn-outline-primary" id="confirmOfferButton">Confirm</a>
             @endif
         @else
             @if ($trade->{'is_' . $type . '_confirmed'})
@@ -19,8 +22,8 @@
                 <small class="text-muted">{!! add_help('This offer has yet to be confirmed.') !!} Pending</small>
             @endif
         @endif
-    </span>
-</h2>
+    </div>
+</div>
 <div class="card mb-3 trade-offer
         @if ($trade->{'is_' . $type . '_confirmed'}) @if ($trade->{'is_' . $type . '_trade_confirmed'})
                 border-success

@@ -398,7 +398,7 @@ class User extends Authenticatable implements MustVerifyEmail {
             return '(Unverified)';
         }
 
-        return $this->primaryAlias->displayAlias;
+        return $this->primaryAlias?->displayAlias ?? '(Unverified)';
     }
 
     /**

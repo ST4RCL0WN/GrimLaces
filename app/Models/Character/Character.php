@@ -473,6 +473,7 @@ class Character extends Model {
         })->orWhere(function ($query) use ($character) {
             $query->with('recipient.rank')->where('recipient_type', 'Character')->where('recipient_id', $character->id)->where('log_type', '!=', 'Staff Removal');
         })->orderBy('id', 'DESC');
+
         if ($limit) {
             return $query->take($limit)->get();
         } else {
